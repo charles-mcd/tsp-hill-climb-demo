@@ -9,7 +9,6 @@ public class TSP {
 	{
 		tsp = inputIn;
 	}
-
 	
 	public void hillClimb(int[][] initialIn)
 	{
@@ -17,13 +16,14 @@ public class TSP {
 		int solutionTotal = totalCost(initialIn);
 		int[][] neighbour;
 		int neighbourTotal;
+		String cheaper = "Convergence of cheaper neighbour totals: ";
 		System.out.println("Initial solution: " + Arrays.deepToString(solution));
 		System.out.println("Initial total: " + solutionTotal);
 		int i = 25;
 		while (i != 0)
 		{
 			neighbour = Arrays.stream(solution).map(int[]::clone).toArray(int[][]::new);
-			int swap1 = randomCity();
+			int swap1 = (int) (Math.random()*(tsp.length-4)+1);    //range excludes start node and three back from the end to avoid swapping the last node connecting back to start
 			int swap2 = swap1 + 1;
 			int x = neighbour[swap1][0];
 			neighbour[swap1][0] = neighbour[swap2][0];
@@ -34,13 +34,15 @@ public class TSP {
 			
 			if (solutionTotal > neighbourTotal)
 			{
-				System.out.println("Cheaper neighbour total: " + neighbourTotal);
+				cheaper += neighbourTotal + ", ";
+				//System.out.println("Cheaper neighbour total: " + neighbourTotal);
 				solution = Arrays.stream(neighbour).map(int[]::clone).toArray(int[][]::new);
 				solutionTotal = neighbourTotal;
 				i = 26;
 			}			
 			i--;
 		}
+		System.out.println((cheaper.substring(0, cheaper.length() - 2)) + ".");
 		System.out.println("Cheapest route (no improvement after 25 iteration): " + Arrays.deepToString(solution));
 		System.out.println("Cost: " + solutionTotal);
 	}
@@ -85,33 +87,30 @@ public class TSP {
 	
 	public int[][] randomInitial()
 	{
-		int[][] random = new int[tsp.length][2];    //1d for order, 2d for cost to next city
-		int k = 0;
+		// using Collections.shuffle to randomise numbers 1 - 49 (requires a List)
+		// excludes 0 from list to maintain constant starting point
 		ArrayList<Integer> a = new ArrayList<>(tsp.length - 1);
 		for (int i = 1; i < tsp.length; i++)
 		{                 
 		    a.add(i);
 		}
 		Collections.shuffle(a);
-		int[] b = a.stream().mapToInt(Integer::intValue).toArray();
+		
+		int[][] random = new int[tsp.length][2];    //1d for order, 2d for cost to next city
+		int k = 0;
+
 		for (int s = 0; s < random.length; s++)
 		{
 			random[s][0] = k;
-			if (s != random.length -1)
+			if (s != random.length -1)              // avoids outofbounds error on final iteration (because of excluded 0 earlier)
 			{
-				k = b[s];
+				k = a.get(s);
 			}
 			random[s][1] = tsp[random[s][0]][k];
 		}
 		random[random.length -1][1] = tsp[random[random.length -1][0]][0];    //assign final cost back to start
 		return random;
 		
-	}
-	
-	public int randomCity()
-	{
-		int random;
-		return random = (int) (Math.random()*(tsp.length-4)+1);    //range excludes start node and three back from the end to avoid swapping the last node connecting back to start
 	}
 	
 	public static void main(String[] args) {
@@ -169,9 +168,9 @@ public class TSP {
 			{2,2,8,2,6,2,1,8,7,9,3,2,5,4,9,9,10,4,8,8,5,1,8,2,9,2,4,8,5,3,8,6,2,7,6,5,1,6,7,5,10,5,2,4,7,6,6,7,2,0}};
 		
 		TSP t = new TSP(input);
-		//int[][] a = t.greedyInitial();
-		int[][] b = t.randomInitial();
-		t.hillClimb(b);
+		int[][] a = t.greedyInitial();
+		//int[][] b = t.randomInitial();
+		t.hillClimb(a);
 
 	}
 
